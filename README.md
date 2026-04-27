@@ -3,6 +3,8 @@
 Work Tracker is a Next.js web app for tracking team tasks with a simple main-item/sub-item structure.
 It is built for daily execution tracking, status updates, and lightweight reporting.
 
+中文版本: [README.zh-HK.md](README.zh-HK.md)
+
 ## Introduction
 
 This project includes:
