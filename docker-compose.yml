@@ -1,0 +1,17 @@
+services:
+  programme-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: programme-tracker
+    ports:
+      - "31005:31005"
+    environment:
+      NODE_ENV: production
+      PORT: 31005
+    volumes:
+      - programme_tracker_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  programme_tracker_data:
