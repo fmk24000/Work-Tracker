@@ -7,15 +7,7 @@ import TrackerTable from '@/components/programme/TrackerTable';
 import ItemModal from '@/components/programme/ItemModal';
 import SettingsModal from '@/components/programme/SettingsModal';
 import ManagePeopleModal from '@/components/programme/ManagePeopleModal';
-import {
-  STORAGE_KEY,
-  THEME_STORAGE_KEY,
-  emptyMainForm,
-  emptySubForm,
-  makeSeed,
-  normalizeTrackerData,
-  uid,
-} from '@/lib/tracker/constants';
+import { STORAGE_KEY, THEME_STORAGE_KEY, emptyMainForm, emptySubForm, makeSeed, normalizeTrackerData, uid } from '@/lib/tracker/constants';
 import { buildMonthBuckets, buildNextMainCode, buildNextSubCode, exportRowsToCsv } from '@/lib/tracker/helpers';
 import { getFilteredRows, getMainItems, getPersonName, getSelectedItems, getStats } from '@/lib/tracker/selectors';
 
@@ -28,7 +20,7 @@ export default function Page() {
     modalOpen: false,
     configOpen: false,
     managePeopleOpen: false,
-    editingId: null,
+    editingId: null
   });
   const [draftPerson, setDraftPerson] = useState('');
   const [form, setForm] = useState(emptyMainForm());
@@ -133,7 +125,7 @@ export default function Page() {
       const response = await fetch('/api/tracker', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) throw new Error('Failed to save tracker data');
@@ -156,6 +148,7 @@ export default function Page() {
   const rows = useMemo(() => getFilteredRows(selectedItems, ui), [selectedItems, ui]);
   const stats = useMemo(() => getStats(selectedItems), [selectedItems]);
   const selectedPersonName = useMemo(() => getPersonName(data, data.selectedPersonId), [data]);
+  const editingItem = useMemo(() => data.items.find((item) => item.id === ui.editingId) || null, [data.items, ui.editingId]);
 
   function updateUi(patch) {
     setUi((prev) => ({ ...prev, ...patch }));
@@ -186,7 +179,7 @@ export default function Page() {
         status: item.status || '',
         remarks: item.remarks || '',
         startDate: item.startDate || '',
-        completionDate: item.completionDate || '',
+        completionDate: item.completionDate || ''
       });
     } else {
       setForm({
@@ -195,7 +188,7 @@ export default function Page() {
         description: item.description || '',
         status: item.status || '',
         remarks: item.remarks || '',
-        targetDate: item.targetDate || '',
+        targetDate: item.targetDate || ''
       });
     }
 
@@ -225,7 +218,7 @@ export default function Page() {
     setData((prev) => ({
       ...prev,
       people: [...prev.people, person],
-      selectedPersonId: person.id,
+      selectedPersonId: person.id
     }));
     setDraftPerson('');
   }
@@ -241,7 +234,7 @@ export default function Page() {
 
     setData((prev) => ({
       ...prev,
-      people: prev.people.map((entry) => (entry.id === person.id ? { ...entry, name: nextName } : entry)),
+      people: prev.people.map((entry) => (entry.id === person.id ? { ...entry, name: nextName } : entry))
     }));
   }
 
@@ -261,7 +254,7 @@ export default function Page() {
         ...prev,
         people,
         selectedPersonId,
-        items: prev.items.filter((item) => item.ownerId !== person.id),
+        items: prev.items.filter((item) => item.ownerId !== person.id)
       };
     });
   }
@@ -284,7 +277,7 @@ export default function Page() {
     }
 
     setData((prev) => {
-      const items = [...prev.items];
+      let items = [...prev.items];
 
       if (ui.editingId) {
         const index = items.findIndex((item) => item.id === ui.editingId);
@@ -292,15 +285,76 @@ export default function Page() {
 
         const existing = items[index];
         if (existing.type === 'main' && form.type === 'main') {
-          items[index] = { ...existing, ...form, ownerId: prev.selectedPersonId };
+          items[index] = {
+            ...existing,
+            ...form,
+            ownerId: prev.selectedPersonId,
+            urgency: Number(form.urgency),
+            importance: Number(form.importance)
+          };
         }
 
         if (existing.type === 'sub' && form.type === 'sub') {
           items[index] = {
             ...existing,
             ...form,
-            code: buildNextSubCode(items, prev.selectedPersonId, form.parentCode, existing.id),
+            code:
+              existing.parentCode === form.parentCode
+                ? existing.code
+                : buildNextSubCode(items, prev.selectedPersonId, form.parentCode, existing.id),
+            ownerId: prev.selectedPersonId
+          };
+        }
+
+        if (existing.type === 'main' && form.type === 'sub') {
+          const oldCode = existing.code;
+          const newParentCode = form.parentCode;
+          const convertedSub = {
+            id: existing.id,
             ownerId: prev.selectedPersonId,
+            type: 'sub',
+            parentCode: newParentCode,
+            code: '',
+            description: form.description.trim(),
+            status: form.status || '',
+            remarks: form.remarks || '',
+            targetDate: form.targetDate,
+            createdAt: existing.createdAt || new Date().toISOString()
+          };
+
+          items[index] = convertedSub;
+          items = items.map((item) => {
+            if (item.type === 'sub' && item.ownerId === existing.ownerId && item.parentCode === oldCode) {
+              return { ...item, parentCode: newParentCode };
+            }
+            return item;
+          });
+
+          let sequence = 0;
+          items = items.map((item) => {
+            if (item.type === 'sub' && item.ownerId === prev.selectedPersonId && item.parentCode === newParentCode) {
+              sequence += 1;
+              return { ...item, code: `${newParentCode}.${sequence}` };
+            }
+            return item;
+          });
+        }
+
+        if (existing.type === 'sub' && form.type === 'main') {
+          items[index] = {
+            id: existing.id,
+            ownerId: prev.selectedPersonId,
+            type: 'main',
+            code: buildNextMainCode(items, prev.selectedPersonId),
+            description: form.description.trim(),
+            position: form.position || '',
+            urgency: Number(form.urgency),
+            importance: Number(form.importance),
+            status: form.status || '',
+            remarks: form.remarks || '',
+            startDate: form.startDate,
+            completionDate: form.completionDate,
+            createdAt: existing.createdAt || new Date().toISOString()
           };
         }
       } else {
@@ -313,7 +367,7 @@ export default function Page() {
             createdAt: new Date().toISOString(),
             ...form,
             urgency: Number(form.urgency),
-            importance: Number(form.importance),
+            importance: Number(form.importance)
           });
         }
 
@@ -324,7 +378,7 @@ export default function Page() {
             type: 'sub',
             code: buildNextSubCode(items, prev.selectedPersonId, form.parentCode),
             createdAt: new Date().toISOString(),
-            ...form,
+            ...form
           });
         }
       }
@@ -336,9 +390,7 @@ export default function Page() {
   }
 
   function removeItem(item) {
-    const confirmed = window.confirm(
-      item.type === 'main' ? `刪除 ${item.code} 同下面所有 sub item？` : `刪除 ${item.code}？`
-    );
+    const confirmed = window.confirm(item.type === 'main' ? `刪除 ${item.code} 同下面所有 sub item？` : `刪除 ${item.code}？`);
     if (!confirmed) return;
 
     setData((prev) => ({
@@ -349,7 +401,7 @@ export default function Page() {
           return false;
         }
         return true;
-      }),
+      })
     }));
   }
 
@@ -358,7 +410,9 @@ export default function Page() {
   }
 
   function exportJsonBackup() {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json'
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -402,7 +456,7 @@ export default function Page() {
       remarks: item.remarks || '',
       startDate: item.startDate || '',
       completionDate: item.completionDate || '',
-      targetDate: item.targetDate || '',
+      targetDate: item.targetDate || ''
     }));
 
     try {
@@ -412,8 +466,8 @@ export default function Page() {
         body: JSON.stringify({
           person: selectedPersonName,
           exportedAt: new Date().toISOString(),
-          rows: payload,
-        }),
+          rows: payload
+        })
       });
 
       if (!response.ok) throw new Error('Webhook failed');
@@ -463,13 +517,26 @@ export default function Page() {
       </div>
 
       {ui.modalOpen ? (
-        <ItemModal form={form} setForm={setForm} editing={Boolean(ui.editingId)} mainItems={mainItems} onClose={closeModal} onSave={saveItem} />
+        <ItemModal
+          form={form}
+          setForm={setForm}
+          editing={Boolean(ui.editingId)}
+          mainItems={mainItems}
+          excludeParentCode={editingItem?.type === 'main' ? editingItem.code : ''}
+          onClose={closeModal}
+          onSave={saveItem}
+        />
       ) : null}
 
       {ui.configOpen ? (
         <SettingsModal
           webhook={data.settings.sheetWebhook}
-          onChange={(value) => setData((prev) => ({ ...prev, settings: { ...prev.settings, sheetWebhook: value } }))}
+          onChange={(value) =>
+            setData((prev) => ({
+              ...prev,
+              settings: { ...prev.settings, sheetWebhook: value }
+            }))
+          }
           onClose={() => updateUi({ configOpen: false })}
         />
       ) : null}
