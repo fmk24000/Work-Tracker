@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.0 - 2026-05-11
+
+### Added
+
+- A dedicated `/routine` board for recurring work, with its own tab and page-level call-to-action labels.
+- Routine badges on tracker rows so recurring jobs stand out inside the shared dataset.
+- Board-aware item creation so new entries opened from the routine view automatically stay on the routine board.
+
+### Changed
+
+- Tracker items now carry a normalized `board` field, allowing the app to separate programme and routine views while keeping one shared data source per owner.
+- Sub items now inherit their board assignment from the selected parent main item to avoid cross-board mismatches.
+- Header copy and board labels now adapt to the active view instead of always showing the generic programme wording.
+
 ## v1.1.0 - 2026-05-11
 
 ### Added

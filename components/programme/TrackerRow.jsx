@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { computePriority, isInBucket } from '@/lib/tracker/helpers';
+import { ROUTINE_ITEM_BOARD } from '@/lib/tracker/constants';
 
 export default function TrackerRow({
   item,
@@ -13,6 +14,7 @@ export default function TrackerRow({
 }) {
   const isMain = item.type === 'main';
   const marks = isMain ? computePriority(item.urgency, item.importance) : '';
+  const isRoutine = item.board === ROUTINE_ITEM_BOARD;
 
   return (
     <tr
@@ -39,6 +41,13 @@ export default function TrackerRow({
             {isMain ? item.description : `-> ${item.description}`}
           </div>
         </div>
+        {isRoutine ? (
+          <div className="mt-1">
+            <span className="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              Routine
+            </span>
+          </div>
+        ) : null}
         {item.remarks ? <div className="text-xs text-neutral-400 dark:text-neutral-500">{item.remarks}</div> : null}
         {isMain && collapsed && childCount > 0 ? (
           <div className="text-xs text-neutral-400 dark:text-neutral-500">

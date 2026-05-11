@@ -78,6 +78,6 @@ Each tracker update writes to the main Docker volume first, then syncs a mirrore
 
 ## Release
 
-- Latest planned release version: `v1.1.0`
+- Latest planned release version: `v1.2.0`
 - See [CHANGELOG.md](./CHANGELOG.md) for the detailed release notes and feature summary
 - Release includes source code archive asset and GitHub auto-generated source archives

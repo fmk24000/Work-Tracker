@@ -7,6 +7,10 @@ export default function HeaderCard({
   setSelectedPersonId,
   openNewMain,
   openNewSub,
+  title,
+  description,
+  mainButtonLabel = 'Main item',
+  subButtonLabel = 'Sub item',
   exportCsv,
   exportToGoogleSheets,
   exportJsonBackup,
@@ -32,10 +36,8 @@ export default function HeaderCard({
                 {syncStatus === 'error' && 'Save failed'}
               </span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight dark:text-neutral-100">Programme Tracker</h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              資料而家可以住入 Docker volume，唔再困喺單一瀏覽器個抽屜入面。📦
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight dark:text-neutral-100">{title}</h1>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <StatCard label="Main items" value={stats.mains} />
@@ -62,10 +64,10 @@ export default function HeaderCard({
           </div>
 
           <button onClick={openNewMain} className="h-10 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">
-            Main item
+            {mainButtonLabel}
           </button>
           <button onClick={openNewSub} className="h-10 rounded-xl bg-violet-600 px-4 text-sm font-medium text-white hover:bg-violet-700">
-            Sub item
+            {subButtonLabel}
           </button>
           <button
             onClick={openManagePeople}

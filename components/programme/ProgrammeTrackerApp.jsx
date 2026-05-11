@@ -9,12 +9,15 @@ import SettingsModal from '@/components/programme/SettingsModal';
 import ManagePeopleModal from '@/components/programme/ManagePeopleModal';
 import StatCard from '@/components/programme/StatCard';
 import {
+  DEFAULT_ITEM_BOARD,
   DEFAULT_PROJECT_NAME,
+  ROUTINE_ITEM_BOARD,
   STORAGE_KEY,
   THEME_STORAGE_KEY,
   emptyMainForm,
   emptySubForm,
   makeSeed,
+  normalizeItemBoard,
   normalizeProjectName,
   normalizeTrackerData,
   uid,
@@ -77,7 +80,49 @@ function buildProjectSections(rowGroups, filterType) {
     });
 }
 
+function getItemsForView(items, view) {
+  if (view !== 'routine') {
+    return items;
+  }
+
+  return items.filter((item) => normalizeItemBoard(item.board) === ROUTINE_ITEM_BOARD);
+}
+
+function getViewConfig(view) {
+  if (view === 'routine') {
+    return {
+      title: 'Routine Jobs',
+      description: 'Capture recurring work here. Anything you add on this page still appears on the main board for the same owner.',
+      boardLabelSuffix: 'routine board',
+      mainButtonLabel: 'Routine main',
+      subButtonLabel: 'Routine sub',
+      newItemBoard: ROUTINE_ITEM_BOARD,
+    };
+  }
+
+  if (view === 'projects') {
+    return {
+      title: 'Programme Tracker',
+      description: 'Review the same tracker data through project-specific boards, while keeping one shared source of truth.',
+      boardLabelSuffix: 'programme board',
+      mainButtonLabel: 'Main item',
+      subButtonLabel: 'Sub item',
+      newItemBoard: DEFAULT_ITEM_BOARD,
+    };
+  }
+
+  return {
+    title: 'Programme Tracker',
+    description: 'Track programme work, milestones, and routine jobs in one shared board backed by server storage.',
+    boardLabelSuffix: 'programme board',
+    mainButtonLabel: 'Main item',
+    subButtonLabel: 'Sub item',
+    newItemBoard: DEFAULT_ITEM_BOARD,
+  };
+}
+
 export default function ProgrammeTrackerApp({ view = 'all' }) {
+  const viewConfig = getViewConfig(view);
   const [data, setData] = useState(makeSeed);
   const [ui, setUi] = useState({
     query: '',
@@ -210,18 +255,19 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
   }
 
   const selectedItems = useMemo(() => getSelectedItems(data), [data]);
-  const mainItems = useMemo(() => getMainItems(selectedItems), [selectedItems]);
-  const columnFilterOptions = useMemo(() => getColumnFilterOptions(selectedItems), [selectedItems]);
+  const viewItems = useMemo(() => getItemsForView(selectedItems, view), [selectedItems, view]);
+  const mainItems = useMemo(() => getMainItems(viewItems), [viewItems]);
+  const columnFilterOptions = useMemo(() => getColumnFilterOptions(viewItems), [viewItems]);
   const projectOptions = useMemo(() => {
     const names = new Set([DEFAULT_PROJECT_NAME]);
     mainItems.forEach((item) => names.add(normalizeProjectName(item.projectName)));
     return Array.from(names).sort(sortProjectNames);
   }, [mainItems]);
-  const monthBuckets = useMemo(() => buildMonthBuckets(selectedItems), [selectedItems]);
-  const rowGroups = useMemo(() => getFilteredGroups(selectedItems, ui), [selectedItems, ui]);
-  const rows = useMemo(() => getFilteredRows(selectedItems, ui), [selectedItems, ui]);
+  const monthBuckets = useMemo(() => buildMonthBuckets(viewItems), [viewItems]);
+  const rowGroups = useMemo(() => getFilteredGroups(viewItems, ui), [viewItems, ui]);
+  const rows = useMemo(() => getFilteredRows(viewItems, ui), [viewItems, ui]);
   const projectSections = useMemo(() => buildProjectSections(rowGroups, ui.filterType), [rowGroups, ui.filterType]);
-  const stats = useMemo(() => getStats(selectedItems), [selectedItems]);
+  const stats = useMemo(() => getStats(viewItems), [viewItems]);
   const selectedPersonName = useMemo(() => getPersonName(data, data.selectedPersonId), [data]);
   const activeColumnFilterCount = useMemo(
     () => Object.values(ui.columnFilters || {}).filter((values) => Array.isArray(values) && values.length > 0).length,
@@ -360,6 +406,16 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
   function saveItem() {
     if (!data.selectedPersonId) return;
     const editingItem = ui.editingId ? data.items.find((item) => item.id === ui.editingId) : null;
+    const fallbackBoard = normalizeItemBoard(editingItem?.board || viewConfig.newItemBoard);
+
+    function resolveBoardForForm(items) {
+      if (form.type !== 'sub') {
+        return fallbackBoard;
+      }
+
+      const parent = items.find((item) => item.id === form.parentId && item.type === 'main');
+      return normalizeItemBoard(parent?.board || editingItem?.board || viewConfig.newItemBoard);
+    }
 
     if (form.type === 'main') {
       if (!form.description.trim()) return;
@@ -394,10 +450,12 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
         if (index === -1) return prev;
 
         const existing = items[index];
+        const nextBoard = resolveBoardForForm(items);
         if (existing.type === 'main' && form.type === 'main') {
           items[index] = {
             ...existing,
             ...form,
+            board: fallbackBoard,
             projectName: normalizeProjectName(form.projectName),
             urgency: Number(form.urgency),
             importance: Number(form.importance),
@@ -409,6 +467,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
           items[index] = {
             ...existing,
             ...form,
+            board: nextBoard,
             ownerId: prev.selectedPersonId,
           };
         }
@@ -418,6 +477,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: existing.id,
             ownerId: prev.selectedPersonId,
             type: 'main',
+            board: fallbackBoard,
             code: existing.code,
             createdAt: existing.createdAt,
             projectName: normalizeProjectName(form.projectName),
@@ -437,6 +497,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: existing.id,
             ownerId: prev.selectedPersonId,
             type: 'sub',
+            board: nextBoard,
             parentId: form.parentId,
             parentCode: '',
             code: existing.code,
@@ -453,6 +514,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: uid(),
             ownerId: prev.selectedPersonId,
             type: 'main',
+            board: viewConfig.newItemBoard,
             code: uid(),
             createdAt: new Date().toISOString(),
             ...form,
@@ -467,6 +529,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: uid(),
             ownerId: prev.selectedPersonId,
             type: 'sub',
+            board: resolveBoardForForm(items),
             parentId: form.parentId,
             parentCode: '',
             code: uid(),
@@ -577,6 +640,10 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
         <BoardModeTabs view={view} />
 
         <HeaderCard
+          title={viewConfig.title}
+          description={viewConfig.description}
+          mainButtonLabel={viewConfig.mainButtonLabel}
+          subButtonLabel={viewConfig.subButtonLabel}
           people={data.people}
           selectedPersonId={data.selectedPersonId}
           setSelectedPersonId={setSelectedPersonId}
@@ -673,7 +740,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
           </div>
         ) : (
           <TrackerTable
-            boardLabel={`${selectedPersonName} programme board`}
+            boardLabel={`${selectedPersonName} ${viewConfig.boardLabelSuffix}`}
             selectedPersonName={selectedPersonName}
             rowGroups={rowGroups}
             monthBuckets={monthBuckets}
