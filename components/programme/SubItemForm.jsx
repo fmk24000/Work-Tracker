@@ -13,10 +13,10 @@ export default function SubItemForm({ form, setForm, mainItems }) {
   return (
     <>
       <Field label="Parent main item">
-        <select className={inputClass} value={form.parentCode} onChange={(e) => setForm((prev) => ({ ...prev, parentCode: e.target.value }))}>
+        <select className={inputClass} value={form.parentId} onChange={(e) => setForm((prev) => ({ ...prev, parentId: e.target.value }))}>
           <option value="">Select parent</option>
           {mainItems.map((item) => (
-            <option key={item.id} value={item.code}>
+            <option key={item.id} value={item.id}>
               {item.code} - {item.description}
             </option>
           ))}

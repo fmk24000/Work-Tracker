@@ -19,33 +19,71 @@ function Modal({ title, children, onClose }) {
   );
 }
 
-export default function ItemModal({ form, setForm, editing, mainItems, onClose, onSave }) {
+export default function ItemModal({ form, setForm, editing, mainItems, projectOptions, onClose, onSave }) {
   const title = editing ? 'Edit item' : 'Add item';
+  const typeCards = [
+    {
+      type: 'main',
+      title: 'Main item',
+      description: 'Track urgency / importance / start / completion',
+      activeClass: 'border-blue-500 bg-blue-50 dark:bg-blue-950/30',
+    },
+    {
+      type: 'sub',
+      title: 'Sub item',
+      description: 'Milestone under a main item with target date',
+      activeClass: 'border-violet-500 bg-violet-50 dark:bg-violet-950/30',
+    },
+  ];
+
+  function switchType(nextType) {
+    if (nextType === form.type) return;
+
+    if (nextType === 'main') {
+      setForm((prev) => ({
+        ...emptyMainForm(),
+        projectName: prev.projectName || '',
+        description: prev.description || '',
+        status: prev.status || '',
+        remarks: prev.remarks || '',
+      }));
+      return;
+    }
+
+    setForm((prev) => ({
+      ...emptySubForm(),
+      description: prev.description || '',
+      status: prev.status || '',
+      remarks: prev.remarks || '',
+    }));
+  }
 
   return (
     <Modal title={title} onClose={onClose}>
       <div className="grid gap-4">
-        {!editing ? (
-          <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          {typeCards.map((card) => (
             <button
-              onClick={() => setForm(emptyMainForm())}
-              className={`rounded-2xl border px-4 py-3 text-left ${form.type === 'main' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : 'border-neutral-200 dark:border-neutral-700'}`}
+              key={card.type}
+              onClick={() => switchType(card.type)}
+              className={`rounded-2xl border px-4 py-3 text-left ${
+                form.type === card.type ? card.activeClass : 'border-neutral-200 dark:border-neutral-700'
+              }`}
             >
-              <div className="font-medium">Main item</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400">有 urgency / importance / start / completion</div>
+              <div className="font-medium">{card.title}</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">{card.description}</div>
             </button>
-            <button
-              onClick={() => setForm(emptySubForm())}
-              className={`rounded-2xl border px-4 py-3 text-left ${form.type === 'sub' ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30' : 'border-neutral-200 dark:border-neutral-700'}`}
-            >
-              <div className="font-medium">Sub item</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400">Milestone，只收 target date</div>
-            </button>
-          </div>
+          ))}
+        </div>
+
+        {editing ? (
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            You can convert this item between main and sub. If this main item still has sub items, move or remove them before converting it to a sub item.
+          </p>
         ) : null}
 
         {form.type === 'main' ? (
-          <MainItemForm form={form} setForm={setForm} />
+          <MainItemForm form={form} setForm={setForm} projectOptions={projectOptions} />
         ) : (
           <SubItemForm form={form} setForm={setForm} mainItems={mainItems} />
         )}

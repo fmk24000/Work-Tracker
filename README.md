@@ -23,9 +23,14 @@ This project includes:
 
 ### 1. Run with Docker (recommended)
 
+Set `TEMP_SHARE_PATH` to your NAS temp share before starting Docker if you want every save mirrored there.
+Example for a Synology-style share:
+
 ```bash
-docker compose up -d --build
+TEMP_SHARE_PATH=/volume1/temp docker compose up -d --build
 ```
+
+If `TEMP_SHARE_PATH` is not set, Docker falls back to `./temp` on the host.
 
 Open:
 
@@ -65,8 +70,14 @@ When running with Docker, tracker data is stored in:
 
 - Container path: `/app/data/tracker-data.json`
 - Docker volume: `programme_tracker_data`
+- Backup mirror inside container: `/backup/temp/tracker-data.json`
+- Timestamp backup history: `/backup/temp/history/tracker-data-<timestamp>.json`
+- Backup host path: `${TEMP_SHARE_PATH}` or `./temp` if unset
+
+Each tracker update writes to the main Docker volume first, then syncs a mirrored latest copy and a timestamped backup copy to the backup path.
 
 ## Release
 
-- Initial release version: `v0.0.1`
+- Latest planned release version: `v1.1.0`
+- See [CHANGELOG.md](./CHANGELOG.md) for the detailed release notes and feature summary
 - Release includes source code archive asset and GitHub auto-generated source archives

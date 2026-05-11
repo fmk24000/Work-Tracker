@@ -1,3 +1,5 @@
+import { DEFAULT_PROJECT_NAME } from '@/lib/tracker/constants';
+
 function Field({ label, children }) {
   return (
     <div>
@@ -7,11 +9,44 @@ function Field({ label, children }) {
   );
 }
 
-export default function MainItemForm({ form, setForm }) {
+export default function MainItemForm({ form, setForm, projectOptions }) {
   const inputClass = 'w-full rounded-xl border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100';
+  const customProjectValue = '__custom__';
+  const currentProjectName = String(form.projectName || '').trim();
+  const hasPresetProject = projectOptions.includes(currentProjectName || DEFAULT_PROJECT_NAME);
+  const projectSelectValue = currentProjectName ? (hasPresetProject ? currentProjectName : customProjectValue) : DEFAULT_PROJECT_NAME;
 
   return (
     <>
+      <Field label="Project name">
+        <select
+          className={inputClass}
+          value={projectSelectValue}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              projectName: e.target.value === customProjectValue ? '' : e.target.value,
+            }))
+          }
+        >
+          {projectOptions.map((projectName) => (
+            <option key={projectName} value={projectName}>
+              {projectName}
+            </option>
+          ))}
+          <option value={customProjectValue}>Custom</option>
+        </select>
+        {projectSelectValue === customProjectValue ? (
+          <input
+            className={`${inputClass} mt-2`}
+            value={form.projectName}
+            placeholder="Enter custom project name"
+            onChange={(e) => setForm((prev) => ({ ...prev, projectName: e.target.value }))}
+          />
+        ) : null}
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Choose an existing project or switch to Custom for your own label.</p>
+      </Field>
+
       <Field label="Description">
         <input className={inputClass} value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
       </Field>

@@ -9,8 +9,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 31005
+      TRACKER_BACKUP_DIR: /backup/temp
     volumes:
       - programme_tracker_data:/app/data
+      - ${TEMP_SHARE_PATH:-./temp}:/backup/temp
     restart: unless-stopped
 
 volumes:
