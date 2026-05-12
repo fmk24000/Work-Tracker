@@ -1,5 +1,12 @@
 import { X } from 'lucide-react';
-import { emptyMainForm, emptySubForm } from '@/lib/tracker/constants';
+import {
+  DEFAULT_ITEM_BOARD,
+  ROUTINE_ITEM_BOARD,
+  emptyMainForm,
+  emptySubForm,
+  getDefaultGanttColor,
+  normalizeItemBoard,
+} from '@/lib/tracker/constants';
 import MainItemForm from './MainItemForm';
 import SubItemForm from './SubItemForm';
 
@@ -43,6 +50,8 @@ export default function ItemModal({ form, setForm, editing, mainItems, projectOp
       setForm((prev) => ({
         ...emptyMainForm(),
         projectName: prev.projectName || '',
+        board: normalizeItemBoard(prev.board),
+        ganttColor: getDefaultGanttColor('main'),
         description: prev.description || '',
         status: prev.status || '',
         remarks: prev.remarks || '',
@@ -52,6 +61,8 @@ export default function ItemModal({ form, setForm, editing, mainItems, projectOp
 
     setForm((prev) => ({
       ...emptySubForm(),
+      board: normalizeItemBoard(prev.board),
+      ganttColor: getDefaultGanttColor('sub'),
       description: prev.description || '',
       status: prev.status || '',
       remarks: prev.remarks || '',
@@ -81,6 +92,26 @@ export default function ItemModal({ form, setForm, editing, mainItems, projectOp
             You can convert this item between main and sub. If this main item still has sub items, move or remove them before converting it to a sub item.
           </p>
         ) : null}
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+          <input
+            type="checkbox"
+            checked={normalizeItemBoard(form.board) === ROUTINE_ITEM_BOARD}
+            onChange={(event) =>
+              setForm((prev) => ({
+                ...prev,
+                board: event.target.checked ? ROUTINE_ITEM_BOARD : DEFAULT_ITEM_BOARD,
+              }))
+            }
+            className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600"
+          />
+          <span>
+            <span className="block font-medium text-neutral-800 dark:text-neutral-100">Routine item</span>
+            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+              Tick this when the item should appear on the Routine Jobs board.
+            </span>
+          </span>
+        </label>
 
         {form.type === 'main' ? (
           <MainItemForm form={form} setForm={setForm} projectOptions={projectOptions} />

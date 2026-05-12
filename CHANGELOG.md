@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.2.1 - 2026-05-13
+
+### Added
+
+- Gantt color presets and a custom color picker for both main and sub items.
+- Saved Gantt colors now render directly on timeline bars and markers.
+- CSV export now includes each item's Gantt color for easier handoff and review.
+
+### Changed
+
+- New items opened from a specific board keep that board assignment in the form.
+- Routine item assignment can now be toggled directly from the item modal.
+- Sub items marked as routine also promote their selected parent main item to the routine board.
+
+### Fixed
+
+- Custom project selection now keeps the custom project input visible while editing.
+- Existing items without saved Gantt colors are normalized to safe default colors.
+- Production builds now use webpack explicitly to avoid Turbopack build issues.
+
 ## v1.2.0 - 2026-05-11
 
 ### Added

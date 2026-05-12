@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { DEFAULT_PROJECT_NAME } from '@/lib/tracker/constants';
+import GanttColorField from './GanttColorField';
 
 function Field({ label, children }) {
   return (
@@ -14,7 +16,14 @@ export default function MainItemForm({ form, setForm, projectOptions }) {
   const customProjectValue = '__custom__';
   const currentProjectName = String(form.projectName || '').trim();
   const hasPresetProject = projectOptions.includes(currentProjectName || DEFAULT_PROJECT_NAME);
-  const projectSelectValue = currentProjectName ? (hasPresetProject ? currentProjectName : customProjectValue) : DEFAULT_PROJECT_NAME;
+  const [isCustomProject, setIsCustomProject] = useState(() => Boolean(currentProjectName && !hasPresetProject));
+  const projectSelectValue = isCustomProject
+    ? customProjectValue
+    : currentProjectName
+      ? hasPresetProject
+        ? currentProjectName
+        : customProjectValue
+      : DEFAULT_PROJECT_NAME;
 
   return (
     <>
@@ -22,12 +31,15 @@ export default function MainItemForm({ form, setForm, projectOptions }) {
         <select
           className={inputClass}
           value={projectSelectValue}
-          onChange={(e) =>
+          onChange={(e) => {
+            const nextValue = e.target.value;
+            const nextIsCustom = nextValue === customProjectValue;
+            setIsCustomProject(nextIsCustom);
             setForm((prev) => ({
               ...prev,
-              projectName: e.target.value === customProjectValue ? '' : e.target.value,
-            }))
-          }
+              projectName: nextIsCustom ? '' : nextValue,
+            }));
+          }}
         >
           {projectOptions.map((projectName) => (
             <option key={projectName} value={projectName}>
@@ -36,7 +48,7 @@ export default function MainItemForm({ form, setForm, projectOptions }) {
           ))}
           <option value={customProjectValue}>Custom</option>
         </select>
-        {projectSelectValue === customProjectValue ? (
+        {isCustomProject ? (
           <input
             className={`${inputClass} mt-2`}
             value={form.projectName}
@@ -58,6 +70,8 @@ export default function MainItemForm({ form, setForm, projectOptions }) {
       <Field label="Remarks">
         <textarea className={inputClass} rows={3} value={form.remarks} onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))} />
       </Field>
+
+      <GanttColorField form={form} setForm={setForm} />
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Position">

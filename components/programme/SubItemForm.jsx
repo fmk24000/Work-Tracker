@@ -1,3 +1,5 @@
+import GanttColorField from './GanttColorField';
+
 function Field({ label, children }) {
   return (
     <div>
@@ -34,6 +36,8 @@ export default function SubItemForm({ form, setForm, mainItems }) {
       <Field label="Remarks">
         <textarea className={inputClass} rows={3} value={form.remarks} onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))} />
       </Field>
+
+      <GanttColorField form={form} setForm={setForm} />
 
       <Field label="Target date">
         <input type="date" className={inputClass} value={form.targetDate} onChange={(e) => setForm((prev) => ({ ...prev, targetDate: e.target.value }))} />

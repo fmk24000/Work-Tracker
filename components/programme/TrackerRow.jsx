@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { computePriority, isInBucket } from '@/lib/tracker/helpers';
-import { ROUTINE_ITEM_BOARD } from '@/lib/tracker/constants';
+import { ROUTINE_ITEM_BOARD, normalizeGanttColor } from '@/lib/tracker/constants';
 
 export default function TrackerRow({
   item,
@@ -15,6 +15,7 @@ export default function TrackerRow({
   const isMain = item.type === 'main';
   const marks = isMain ? computePriority(item.urgency, item.importance) : '';
   const isRoutine = item.board === ROUTINE_ITEM_BOARD;
+  const ganttColor = normalizeGanttColor(item.ganttColor, item.type);
 
   return (
     <tr
@@ -87,7 +88,12 @@ export default function TrackerRow({
           const active = isInBucket(item, m.year, m.month, week);
           return (
             <td key={`${item.id}-${m.year}-${m.month}-${week}`} className="border-b border-l border-neutral-200 px-1 py-1 dark:border-neutral-800">
-              {active ? <div className={isMain ? 'h-4 rounded-md bg-blue-500' : 'mx-auto h-3 w-3 rounded-full bg-violet-500'} /> : null}
+              {active ? (
+                <div
+                  className={isMain ? 'h-4 rounded-md' : 'mx-auto h-3 w-3 rounded-full'}
+                  style={{ backgroundColor: ganttColor }}
+                />
+              ) : null}
             </td>
           );
         })

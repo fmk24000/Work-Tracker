@@ -16,6 +16,7 @@ import {
   THEME_STORAGE_KEY,
   emptyMainForm,
   emptySubForm,
+  normalizeGanttColor,
   makeSeed,
   normalizeItemBoard,
   normalizeProjectName,
@@ -302,12 +303,18 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
   }
 
   function openNewMain() {
-    setForm(emptyMainForm());
+    setForm({
+      ...emptyMainForm(),
+      board: viewConfig.newItemBoard,
+    });
     updateUi({ modalOpen: true, editingId: null });
   }
 
   function openNewSub() {
-    setForm(emptySubForm());
+    setForm({
+      ...emptySubForm(),
+      board: viewConfig.newItemBoard,
+    });
     updateUi({ modalOpen: true, editingId: null });
   }
 
@@ -315,6 +322,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
     if (item.type === 'main') {
       setForm({
         type: 'main',
+        board: normalizeItemBoard(item.board),
         projectName: normalizeProjectName(item.projectName),
         description: item.description || '',
         position: item.position || '',
@@ -324,15 +332,18 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
         remarks: item.remarks || '',
         startDate: item.startDate || '',
         completionDate: item.completionDate || '',
+        ganttColor: normalizeGanttColor(item.ganttColor, 'main'),
       });
     } else {
       setForm({
         type: 'sub',
+        board: normalizeItemBoard(item.board),
         parentId: item.parentId || '',
         description: item.description || '',
         status: item.status || '',
         remarks: item.remarks || '',
         targetDate: item.targetDate || '',
+        ganttColor: normalizeGanttColor(item.ganttColor, 'sub'),
       });
     }
 
@@ -406,16 +417,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
   function saveItem() {
     if (!data.selectedPersonId) return;
     const editingItem = ui.editingId ? data.items.find((item) => item.id === ui.editingId) : null;
-    const fallbackBoard = normalizeItemBoard(editingItem?.board || viewConfig.newItemBoard);
-
-    function resolveBoardForForm(items) {
-      if (form.type !== 'sub') {
-        return fallbackBoard;
-      }
-
-      const parent = items.find((item) => item.id === form.parentId && item.type === 'main');
-      return normalizeItemBoard(parent?.board || editingItem?.board || viewConfig.newItemBoard);
-    }
+    const formBoard = normalizeItemBoard(form.board || editingItem?.board || viewConfig.newItemBoard);
 
     if (form.type === 'main') {
       if (!form.description.trim()) return;
@@ -450,15 +452,26 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
         if (index === -1) return prev;
 
         const existing = items[index];
-        const nextBoard = resolveBoardForForm(items);
+        const nextBoard = formBoard;
+        const selectedParentIndex =
+          form.type === 'sub' ? items.findIndex((item) => item.id === form.parentId && item.type === 'main') : -1;
+
+        if (form.type === 'sub' && nextBoard === ROUTINE_ITEM_BOARD && selectedParentIndex !== -1) {
+          items[selectedParentIndex] = {
+            ...items[selectedParentIndex],
+            board: ROUTINE_ITEM_BOARD,
+          };
+        }
+
         if (existing.type === 'main' && form.type === 'main') {
           items[index] = {
             ...existing,
             ...form,
-            board: fallbackBoard,
+            board: formBoard,
             projectName: normalizeProjectName(form.projectName),
             urgency: Number(form.urgency),
             importance: Number(form.importance),
+            ganttColor: normalizeGanttColor(form.ganttColor, 'main'),
             ownerId: prev.selectedPersonId,
           };
         }
@@ -468,6 +481,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             ...existing,
             ...form,
             board: nextBoard,
+            ganttColor: normalizeGanttColor(form.ganttColor, 'sub'),
             ownerId: prev.selectedPersonId,
           };
         }
@@ -477,7 +491,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: existing.id,
             ownerId: prev.selectedPersonId,
             type: 'main',
-            board: fallbackBoard,
+            board: formBoard,
             code: existing.code,
             createdAt: existing.createdAt,
             projectName: normalizeProjectName(form.projectName),
@@ -489,6 +503,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             remarks: form.remarks,
             startDate: form.startDate,
             completionDate: form.completionDate,
+            ganttColor: normalizeGanttColor(form.ganttColor, 'main'),
           };
         }
 
@@ -506,6 +521,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             status: form.status,
             remarks: form.remarks,
             targetDate: form.targetDate,
+            ganttColor: normalizeGanttColor(form.ganttColor, 'sub'),
           };
         }
       } else {
@@ -514,27 +530,39 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
             id: uid(),
             ownerId: prev.selectedPersonId,
             type: 'main',
-            board: viewConfig.newItemBoard,
+            board: formBoard,
             code: uid(),
             createdAt: new Date().toISOString(),
             ...form,
             projectName: normalizeProjectName(form.projectName),
             urgency: Number(form.urgency),
             importance: Number(form.importance),
+            ganttColor: normalizeGanttColor(form.ganttColor, 'main'),
           });
         }
 
         if (form.type === 'sub') {
+          const nextBoard = formBoard;
+          const selectedParentIndex = items.findIndex((item) => item.id === form.parentId && item.type === 'main');
+
+          if (nextBoard === ROUTINE_ITEM_BOARD && selectedParentIndex !== -1) {
+            items[selectedParentIndex] = {
+              ...items[selectedParentIndex],
+              board: ROUTINE_ITEM_BOARD,
+            };
+          }
+
           items.push({
             id: uid(),
             ownerId: prev.selectedPersonId,
             type: 'sub',
-            board: resolveBoardForForm(items),
+            board: nextBoard,
             parentId: form.parentId,
             parentCode: '',
             code: uid(),
             createdAt: new Date().toISOString(),
             ...form,
+            ganttColor: normalizeGanttColor(form.ganttColor, 'sub'),
           });
         }
       }
