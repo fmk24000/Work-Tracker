@@ -23,7 +23,7 @@ import {
   normalizeTrackerData,
   uid,
 } from '@/lib/tracker/constants';
-import { buildMonthBuckets, exportRowsToCsv } from '@/lib/tracker/helpers';
+import { buildMonthBuckets, exportRowsToCsv, importRowsFromCsv } from '@/lib/tracker/helpers';
 import {
   getColumnFilterOptions,
   getFilteredGroups,
@@ -619,6 +619,33 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
       }
     };
     reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function importCsv(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const confirmed = window.confirm(
+      'Import this CSV and replace existing tracker items for the owners included in the file?'
+    );
+    if (!confirmed) {
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = importRowsFromCsv(data, String(reader.result), data.selectedPersonId, viewConfig.newItemBoard);
+        setData(normalizeTrackerData(parsed));
+        alert('CSV imported.');
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'CSV format is invalid.');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
   }
 
   async function exportToGoogleSheets() {
@@ -681,6 +708,7 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
           exportToGoogleSheets={exportToGoogleSheets}
           exportJsonBackup={exportJsonBackup}
           importJson={importJson}
+          importCsv={importCsv}
           openSettings={() => updateUi({ configOpen: true })}
           openManagePeople={() => updateUi({ managePeopleOpen: true })}
           stats={stats}

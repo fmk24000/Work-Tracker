@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- CSV schedule import from Excel-prepared files, using the existing export columns for round-trip handoff.
+- CSV imports can create or match owners from the `Owner` column and replace only the imported owners' tracker items.
+
 ## v1.2.1 - 2026-05-13
 
 ### Added

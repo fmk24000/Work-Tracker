@@ -1,0 +1,73 @@
+{
+  "people": [
+    {
+      "id": "zkd96eqw",
+      "name": "Louis"
+    },
+    {
+      "id": "ptb7k6fl",
+      "name": "Alfred"
+    },
+    {
+      "id": "4unzxgar",
+      "name": "Adeline"
+    }
+  ],
+  "selectedPersonId": "zkd96eqw",
+  "settings": {
+    "sheetWebhook": ""
+  },
+  "items": [
+    {
+      "id": "3bpc2r5b",
+      "ownerId": "zkd96eqw",
+      "type": "main",
+      "board": "routine",
+      "code": "1",
+      "projectName": "General",
+      "description": "i3 Server bi-weekly reboot",
+      "position": "IC",
+      "urgency": 3,
+      "importance": 3,
+      "status": "Completed",
+      "remarks": "Routine maintenance",
+      "startDate": "2026-04-01",
+      "completionDate": "2026-04-05",
+      "createdAt": "2026-05-12T15:50:16.311Z",
+      "ganttColor": "#3b82f6"
+    },
+    {
+      "id": "izyx1uwg",
+      "ownerId": "zkd96eqw",
+      "type": "main",
+      "board": "programme",
+      "code": "2",
+      "projectName": "i3 Upgrade",
+      "description": "Add environmental sensor for i3",
+      "position": "IC",
+      "urgency": 3,
+      "importance": 3,
+      "status": "In progress",
+      "remarks": "Point mapping pending",
+      "startDate": "2026-04-10",
+      "completionDate": "2026-04-30",
+      "createdAt": "2026-05-12T15:50:16.312Z",
+      "ganttColor": "#3b82f6"
+    },
+    {
+      "id": "8j1h0n4q",
+      "ownerId": "zkd96eqw",
+      "type": "sub",
+      "board": "programme",
+      "parentId": "izyx1uwg",
+      "parentCode": "2",
+      "code": "2.1",
+      "description": "Sensor hardware setup",
+      "status": "Pending",
+      "remarks": "Vendor slot to confirm",
+      "targetDate": "2026-04-20",
+      "createdAt": "2026-05-12T15:50:16.312Z",
+      "ganttColor": "#8b5cf6"
+    }
+  ]
+}

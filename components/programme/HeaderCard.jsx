@@ -15,6 +15,7 @@ export default function HeaderCard({
   exportToGoogleSheets,
   exportJsonBackup,
   importJson,
+  importCsv,
   openSettings,
   openManagePeople,
   stats,
@@ -83,20 +84,56 @@ export default function HeaderCard({
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
-          <button onClick={exportCsv} className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+          <button
+            type="button"
+            onClick={exportCsv}
+            title="Export CSV"
+            aria-label="Export CSV"
+            className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
             <Download className="h-4 w-4" />
           </button>
-          <button onClick={exportToGoogleSheets} className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+          <label
+            title="Import CSV"
+            aria-label="Import CSV"
+            className="flex h-10 cursor-pointer items-center rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
+            <input type="file" accept=".csv,text/csv" className="hidden" onChange={importCsv} />
+            <Upload className="h-4 w-4" />
+          </label>
+          <button
+            type="button"
+            onClick={exportToGoogleSheets}
+            title="Export to Google Sheets"
+            aria-label="Export to Google Sheets"
+            className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
             <Link2 className="h-4 w-4" />
           </button>
-          <button onClick={exportJsonBackup} className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+          <button
+            type="button"
+            onClick={exportJsonBackup}
+            title="Export JSON backup"
+            aria-label="Export JSON backup"
+            className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
             <Upload className="h-4 w-4 rotate-180" />
           </button>
-          <label className="flex h-10 cursor-pointer items-center rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+          <label
+            title="Import JSON backup"
+            aria-label="Import JSON backup"
+            className="flex h-10 cursor-pointer items-center rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
             <input type="file" accept="application/json" className="hidden" onChange={importJson} />
             <Upload className="h-4 w-4" />
           </label>
-          <button onClick={openSettings} className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+          <button
+            type="button"
+            onClick={openSettings}
+            title="Settings"
+            aria-label="Settings"
+            className="h-10 rounded-xl border border-neutral-300 px-3 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
             <Settings className="h-4 w-4" />
           </button>
         </div>

@@ -13,7 +13,7 @@ This project includes:
 - Person-based boards
 - Gantt-style month/week timeline view
 - Priority scoring (urgency x importance)
-- CSV export
+- CSV export and import
 - JSON backup and import
 - Google Sheets webhook export
 - Light and dark mode
@@ -75,6 +75,13 @@ When running with Docker, tracker data is stored in:
 - Backup host path: `${TEMP_SHARE_PATH}` or `./temp` if unset
 
 Each tracker update writes to the main Docker volume first, then syncs a mirrored latest copy and a timestamped backup copy to the backup path.
+
+## CSV Import
+
+Use the CSV upload button beside CSV export to import a schedule prepared in Excel.
+The importer supports the same columns produced by CSV export: `Owner`, `Type`, `Code`, `Project Name`, `Description`, `Position`, `Urgency`, `Importance`, `Status`, `Remarks`, `Gantt Color`, `Start Date`, `Completion Date`, and `Target Date`.
+
+Rows with `Type` set to `main` create main items. Rows with `Type` set to `sub` create sub items and are linked to a main item by the parent code inferred from values like `2.1`, or by an optional `Parent Code` column. Importing replaces existing tracker items for the owners included in the CSV, while keeping other owners untouched.
 
 ## Release
 
