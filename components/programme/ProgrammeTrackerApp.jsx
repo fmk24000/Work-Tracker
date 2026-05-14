@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 import HeaderCard from '@/components/programme/HeaderCard';
 import ToolbarCard from '@/components/programme/ToolbarCard';
 import TrackerTable from '@/components/programme/TrackerTable';
@@ -846,6 +847,16 @@ export default function ProgrammeTrackerApp({ view = 'all' }) {
           onClose={() => updateUi({ managePeopleOpen: false })}
         />
       ) : null}
+
+      <button
+        type="button"
+        onClick={openNewMain}
+        className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-900/20 transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus:ring-blue-900"
+        aria-label={`Add ${viewConfig.mainButtonLabel.toLowerCase()}`}
+        title={`Add ${viewConfig.mainButtonLabel.toLowerCase()}`}
+      >
+        <Plus className="h-7 w-7" />
+      </button>
     </div>
   );
 }

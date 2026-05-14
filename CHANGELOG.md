@@ -2,10 +2,14 @@
 
 ## Unreleased
 
+## v1.3.0 - 2026-05-14
+
 ### Added
 
 - CSV schedule import from Excel-prepared files, using the existing export columns for round-trip handoff.
 - CSV imports can create or match owners from the `Owner` column and replace only the imported owners' tracker items.
+- A board-level Collapse all button for quickly hiding every visible sub item.
+- A floating plus button in the lower-right corner for creating a new main item from anywhere on the board.
 
 ## v1.2.1 - 2026-05-13
 

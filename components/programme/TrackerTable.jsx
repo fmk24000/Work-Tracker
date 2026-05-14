@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, ChevronsUp, Filter, X } from 'lucide-react';
 import { BLANK_FILTER_TOKEN, formatMonthLabel } from '@/lib/tracker/helpers';
 import TrackerRow from './TrackerRow';
 
@@ -206,13 +206,41 @@ export default function TrackerTable({
     setCollapsedMainIds((current) => ({ ...current, [mainId]: !current[mainId] }));
   }
 
+  function collapseAll() {
+    setCollapsedMainIds((current) => {
+      const next = { ...current };
+
+      rowGroups.forEach(({ main, totalChildren }) => {
+        if (totalChildren > 0) {
+          next[main.id] = true;
+        }
+      });
+
+      return next;
+    });
+  }
+
+  const collapsibleRowCount = rowGroups.filter(({ totalChildren }) => totalChildren > 0).length;
+
   return (
     <div className="overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
       <table className="min-w-[1620px] w-full border-collapse text-sm">
         <thead>
           <tr>
             <th colSpan={10} className="border-b border-neutral-200 bg-neutral-950 px-3 py-2 text-left text-white dark:border-neutral-800">
-              {boardLabel || `${selectedPersonName} programme board`}
+              <div className="flex items-center justify-between gap-3">
+                <span>{boardLabel || `${selectedPersonName} programme board`}</span>
+                <button
+                  type="button"
+                  onClick={collapseAll}
+                  disabled={!collapseEnabled || collapsibleRowCount === 0}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/20 px-2.5 text-xs font-medium text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  title={collapseEnabled ? 'Collapse all sub items' : 'Clear search and filters to collapse rows'}
+                >
+                  <ChevronsUp className="h-3.5 w-3.5" />
+                  Collapse all
+                </button>
+              </div>
             </th>
             {monthBuckets.map((m) => (
               <th key={`${m.year}-${m.month}`} colSpan={4} className="border-b border-l border-neutral-700 bg-neutral-950 px-2 py-2 text-center text-white">
