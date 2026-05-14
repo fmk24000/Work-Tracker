@@ -12,15 +12,15 @@ import SubItemForm from './SubItemForm';
 
 function Modal({ title, children, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-3xl rounded-3xl border border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100">
-        <div className="mb-4 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center">
+      <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-3xl flex-col rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100">
+        <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 p-5 dark:border-neutral-800">
           <h2 className="text-xl font-bold">{title}</h2>
           <button onClick={onClose} className="rounded-lg p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800">
             <X className="h-5 w-5" />
           </button>
         </div>
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );
@@ -119,7 +119,7 @@ export default function ItemModal({ form, setForm, editing, mainItems, projectOp
           <SubItemForm form={form} setForm={setForm} mainItems={mainItems} />
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 flex justify-end gap-2 border-t border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <button onClick={onClose} className="rounded-xl border border-neutral-300 px-4 py-2 dark:border-neutral-700">
             Cancel
           </button>
